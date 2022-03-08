@@ -11,6 +11,14 @@ Description: With simple and small functions, the package provide tools do list,
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.0.0
+RoxygenNote: 7.1.2
 URL: https://github.com/hhmacedo/dnads
 BugReports: https://github.com/hhmacedo/dnads/issues
+Imports: 
+    dplyr,
+    magrittr,
+    RCurl,
+    readr,
+    rlang,
+    stringr,
+    survey
