@@ -9,13 +9,13 @@
 #' @importFrom rlang .data
 pnad_read <- function(data, input) {
 
+  # Get year from data
   year <- as.numeric(substr(readLines(data, n = 1), 1, 4))
 
+  # Import input file
   input_df <- suppressWarnings(readr::read_table(input,
                                                  col_names = FALSE,
                                                  show_col_types = FALSE))
-
-
 
   # Check if there is no breakline between input and first variable and fix it
   if (year %in% c(2001:2007, 2011:2015)) {
@@ -34,7 +34,7 @@ pnad_read <- function(data, input) {
 
   }
 
-
+  # Extract variable name, positions and type
   input_df <- input_df %>%
     dplyr::filter(substr(iconv(.data$X1, "", "ASCII//TRANSLIT"), 1, 1) == "@") %>%
     dplyr::select(.data$X1, .data$X2, .data$X3) %>%
