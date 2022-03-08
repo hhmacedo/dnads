@@ -29,13 +29,13 @@ pnad_get <- function(year = NULL, design = TRUE) {
     # Extract files
     if (.Platform$OS.type == "windows") {
 
-      utils::unzip(basename(download_link), junkpaths = TRUE, exdir = temp_dir)
+      utils::unzip(temp_file, junkpaths = TRUE, exdir = temp_dir)
 
     } else {
 
       system(paste("unzip -j",
                    "-d", temp_dir,
-                   file.path(tempdir(), basename(download_link))),
+                   temp_file),
              ignore.stdout = TRUE)
 
     }
