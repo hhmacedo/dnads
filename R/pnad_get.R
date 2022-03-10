@@ -61,7 +61,7 @@ pnad_get <- function(year = NULL, design = TRUE) {
                               value = TRUE))
 
     file_input <- file.path(temp_dir,
-                            grep(paste0("^input ", data, "\\d{4}"),
+                            grep(paste0("^input.{1}", data, "\\d{4}.txt"),
                                  list.files(temp_dir),
                                  ignore.case = TRUE,
                                  value = TRUE))
