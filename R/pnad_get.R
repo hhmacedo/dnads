@@ -37,7 +37,7 @@ pnad_get <- function(year = NULL, design = TRUE) {
 
     } else {
 
-      system(paste("unzip -j",
+      system(paste("unzip -n -j",
                    "-d", temp_dir,
                    temp_file),
              ignore.stdout = TRUE)
