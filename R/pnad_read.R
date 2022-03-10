@@ -1,67 +1,50 @@
-#' Title
+#' Import the data from PNAD using SAS input
 #'
-#' @param data Data file
-#' @param input Input SAS file
+#' The pnad_read() function is responsible for read the data using the input
+#' file. The variables needed to use the pnad_design() function will always be
+#' imported automatically, even if not selected.
+#'
+#' @param data Data file.
+#' @param input Input SAS file.
+#' @param vars Selected variables.
 #'
 #' @return A tibble
 #' @export
 #'
+#' @examples
+#' \dontrun{
+#' # Import household data
+#' pnad2008_dom <- pnad_read(data = "DOM2008.txt", input = "input DOM2008.txt")
+#'
+#' # Import person data
+#' pnad2008_pes <- pnad_read(data = "PES2008.TXT", input = "input PES2008.txt", vars = c("V8005"))
+#' }
 #' @importFrom rlang .data
-pnad_read <- function(data, input) {
+pnad_read <- function(data, input, vars) {
 
+  # Get year from data
   year <- as.numeric(substr(readLines(data, n = 1), 1, 4))
 
-  input_df <- suppressWarnings(readr::read_table(input,
-                                                 col_names = FALSE,
-                                                 show_col_types = FALSE))
+  # Import input
+  input_df <- sas_import(input = input, year = year)
 
+  if (!is.null(vars)) {
+    mandatory_vars <-
+      dplyr::case_when(year == 2001 ~ list(c("PSU", "STRAT")),
+                       year %in% 2004:2009 ~ list(c("V4618", "V4617", "V4619")),
+                       # The option below excludes 2004:2009
+                       year %in% 2002:2015 ~ list(c("V4618", "V4617")))
 
+    mandatory_vars <- c("V4610", "V4609", "V0101", "V0102", "V0103", "UF",
+                        "V0301",  unlist(mandatory_vars))
 
-  # Check if there is no breakline between input and first variable and fix it
-  if (year %in% c(2001:2007, 2011:2015)) {
+    vars <- c(mandatory_vars, vars)
 
-    if (nrow(input_df[iconv(input_df$X1, "", "ASCII//TRANSLIT") == "INPUT" &
-                      substr(iconv(input_df$X2, "", "ASCII//TRANSLIT"), 1, 1) == "@",]) == 1) {
-      line1 <- input_df %>%
-        dplyr::filter(iconv(.data$X1, "", "ASCII//TRANSLIT") == "INPUT",
-                      substr(iconv(.data$X2, "", "ASCII//TRANSLIT"), 1, 1) == "@") %>%
-        dplyr::select(.data$X2, .data$X3, .data$X4) %>%
-        dplyr::rename(X1 = .data$X2, X2 = .data$X3, X3 = .data$X4)
-
-      input_df <- dplyr::bind_rows(line1, input_df)
-      rm(line1)
-    }
-
+    input_df <- dplyr::mutate(input_df,
+                              type = ifelse(input_df$name %in% vars,
+                                            input_df$type,
+                                            "_"))
   }
-
-
-  input_df <- input_df %>%
-    dplyr::filter(substr(iconv(.data$X1, "", "ASCII//TRANSLIT"), 1, 1) == "@") %>%
-    dplyr::select(.data$X1, .data$X2, .data$X3) %>%
-    dplyr::mutate(X3 = gsub("\\/\\*", "", .data$X3)) %>%
-    dplyr::transmute(start = as.integer(gsub("@", "", .data$X1)),
-                     end = .data$start +
-                       floor(as.numeric(gsub("\\$(CHAR)?", "", .data$X3))) -
-                       1,
-                     type = ifelse(substr(.data$X3, 1, 1) == "$", "c", "d"),
-                     name = .data$X2)
-
-  # Change age factor to numeric
-  if (year %in% c(2003, 2007)) {
-    input_df <- input_df %>%
-      dplyr::mutate(type = ifelse(.data$name == "V8005" & .data$type == "c",
-                                  "d",
-                                  .data$type))
-  }
-
-  # Fix the duplicate column names in 2007
-  if (year == 2007) {
-    input_df <- input_df %>%
-      dplyr::mutate(name = ifelse(.data$start == 965 & .data$name == "V9993",
-                                  "V9993B",
-                                  .data$name))
-  }
-
 
   # Ignore the warning created by a special character at line 174609
   if (grepl("pes", input, ignore.case = TRUE) & year == 2001) {
