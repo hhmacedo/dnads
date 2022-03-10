@@ -19,10 +19,10 @@
 pnad_get <- function(year = NULL, design = TRUE) {
 
   # A year must be provided
-  stopifnot("You must select an year" = !is.null(year))
+  stopifnot("You must select an year" = !missing(year))
 
   # List required files
-  download_links <- dnads::pnad_list(files = TRUE, year = year)
+  download_links <- pnad_list(files = TRUE, year = year)
 
   for (download_link in download_links) {
     temp_file <- file.path(tempdir(), basename(download_link))
@@ -81,7 +81,7 @@ pnad_get <- function(year = NULL, design = TRUE) {
 
   # Check if must return a survey object
   if (design == TRUE) {
-    pnad <- dnads::pnad_design(pnad)
+    pnad <- pnad_design(pnad)
   }
 
   return(pnad)
