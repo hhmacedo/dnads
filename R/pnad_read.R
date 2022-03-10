@@ -1,11 +1,24 @@
-#' Title
+#' Import the data from PNAD using SAS input
 #'
-#' @param data Data file
-#' @param input Input SAS file
+#' The pnad_read() function is responsible for read the data using the input
+#' file. The variables needed to use the pnad_design() function will always be
+#' imported automatically, even if not selected.
+#'
+#' @param data Data file.
+#' @param input Input SAS file.
+#' @param vars Selected variables.
 #'
 #' @return A tibble
 #' @export
 #'
+#' @examples
+#' \dontrun{
+#' # Import household data
+#' pnad2008_dom <- pnad_read(data = "DOM2008.txt", input = "input DOM2008.txt")
+#'
+#' # Import person data
+#' pnad2008_pes <- pnad_read(data = "PES2008.TXT", input = "input PES2008.txt", vars = c("V8005"))
+#' }
 #' @importFrom rlang .data
 pnad_read <- function(data, input) {
 

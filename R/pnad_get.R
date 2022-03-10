@@ -8,7 +8,11 @@
 #'
 #' @examples
 #' \dontrun{
-#' pnad_get(year = 2015)
+#' # Download PNAD 2015
+#' pnad2015 <- pnad_get(year = 2015)
+#'
+#' # Select just the variable V8005 for PNAD 2008
+#' pnad2008 <- pnad_get(year = 2008, vars = c("V8005"))
 #' }
 #'
 #' @importFrom utils download.file unzip

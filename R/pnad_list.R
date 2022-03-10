@@ -1,4 +1,4 @@
-#' Lists available years or required files.
+#' List available years or required files
 #'
 #' @param year Selected year to return files.
 #' @param files If TRUE, returns required files for a given year.

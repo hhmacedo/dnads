@@ -2,7 +2,7 @@
 % Please edit documentation in R/pnad_list.R
 \name{pnad_list}
 \alias{pnad_list}
-\title{Lists available years or required files.}
+\title{List available years or required files}
 \usage{
 pnad_list(year = NULL, files = FALSE)
 }
@@ -15,7 +15,7 @@ pnad_list(year = NULL, files = FALSE)
 A vector of years or files urls.
 }
 \description{
-Lists available years or required files.
+List available years or required files
 }
 \examples{
 # Print years available

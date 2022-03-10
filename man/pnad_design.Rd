@@ -2,16 +2,16 @@
 % Please edit documentation in R/pnad_design.R
 \name{pnad_design}
 \alias{pnad_design}
-\title{Implement survey design.}
+\title{Implement a complex survey design}
 \usage{
 pnad_design(df)
 }
 \arguments{
-\item{df}{Dataframe to be read}
+\item{df}{Data frame from PNAD}
 }
 \value{
-A survey object.
+An object of class survey.design.
 }
 \description{
-Implement survey design.
+Implement a complex survey design
 }

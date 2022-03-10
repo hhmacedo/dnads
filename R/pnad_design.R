@@ -1,8 +1,8 @@
-#' Implement survey design.
+#' Implement a complex survey design
 #'
-#' @param df Dataframe to be read
+#' @param df Data frame from PNAD
 #'
-#' @return A survey object.
+#' @return An object of class survey.design.
 #' @export
 #'
 pnad_design <- function(df) {

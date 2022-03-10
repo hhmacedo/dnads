@@ -2,18 +2,31 @@
 % Please edit documentation in R/pnad_read.R
 \name{pnad_read}
 \alias{pnad_read}
-\title{Title}
+\title{Import the data from PNAD using SAS input}
 \usage{
-pnad_read(data, input)
+pnad_read(data, input, vars)
 }
 \arguments{
-\item{data}{Data file}
+\item{data}{Data file.}
 
-\item{input}{Input SAS file}
+\item{input}{Input SAS file.}
+
+\item{vars}{Selected variables.}
 }
 \value{
 A tibble
 }
 \description{
-Title
+The pnad_read() function is responsible for read the data using the input
+file. The variables needed to use the pnad_design() function will always be
+imported automatically, even if not selected.
+}
+\examples{
+\dontrun{
+# Import household data
+pnad2008_dom <- pnad_read(data = "DOM2008.txt", input = "input DOM2008.txt")
+
+# Import person data
+pnad2008_pes <- pnad_read(data = "PES2008.TXT", input = "input PES2008.txt", vars = c("V8005"))
+}
 }

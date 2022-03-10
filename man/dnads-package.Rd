@@ -6,7 +6,7 @@
 \alias{dnads-package}
 \title{dnads: Download, Read and Design PNADs}
 \description{
-With simple and small functions, the package provide tools do list, download, read and design PNAD data.
+With simple and small functions, the package provide tools to list, download, read and design PNAD data.
 }
 \seealso{
 Useful links:
