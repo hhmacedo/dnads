@@ -28,22 +28,24 @@ pnad_read <- function(data, input, vars) {
   # Import input
   input_df <- sas_import(input = input, year = year)
 
-  if (!is.null(vars)) {
-    mandatory_vars <-
-      dplyr::case_when(year == 2001 ~ list(c("PSU", "STRAT")),
-                       year %in% 2004:2009 ~ list(c("V4618", "V4617", "V4619")),
-                       # The option below excludes 2004:2009
-                       year %in% 2002:2015 ~ list(c("V4618", "V4617")))
+  if (!missing("vars")) {
+    if (!is.null(vars)) {
+      mandatory_vars <-
+        dplyr::case_when(year == 2001 ~ list(c("PSU", "STRAT")),
+                         year %in% 2004:2009 ~ list(c("V4618", "V4617", "V4619")),
+                         # The option below excludes 2004:2009
+                         year %in% 2002:2015 ~ list(c("V4618", "V4617")))
 
-    mandatory_vars <- c("V4610", "V4609", "V0101", "V0102", "V0103", "UF",
-                        "V0301",  unlist(mandatory_vars))
+      mandatory_vars <- c("V4610", "V4609", "V0101", "V0102", "V0103", "UF",
+                          "V0301",  unlist(mandatory_vars))
 
-    vars <- c(mandatory_vars, vars)
+      vars <- c(mandatory_vars, vars)
 
-    input_df <- dplyr::mutate(input_df,
-                              type = ifelse(input_df$name %in% vars,
-                                            input_df$type,
-                                            "_"))
+      input_df <- dplyr::mutate(input_df,
+                                type = ifelse(input_df$name %in% vars,
+                                              input_df$type,
+                                              "_"))
+    }
   }
 
   # Ignore the warning created by a special character at line 174609
