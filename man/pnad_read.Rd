@@ -31,6 +31,8 @@ imported automatically, even if not selected.
 pnad2008_dom <- pnad_read(hh_data = "DOM2008.txt", hh_input = "input DOM2008.txt")
 
 # Import household and person data, but just mandatory vars and V8005.
-pnad2008 <- pnad_read(hh_data = "DOM2008.txt", hh_input = "input DOM2008.txt", prs_data = "PES2008.TXT", prs_input = "input PES2008.txt", vars = c("V8005"))
+pnad2008 <- pnad_read(hh_data = "DOM2008.txt", hh_input = "input DOM2008.txt",
+                      prs_data = "PES2008.TXT", prs_input = "input PES2008.txt",
+                      vars = c("V8005"))
 }
 }
