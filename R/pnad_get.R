@@ -3,6 +3,7 @@
 #' @param year A year must be provided.
 #' @param design TRUE if you want a survey object, FALSE if you want a dataframe.
 #' @param vars Selected variables
+#' @param hh_only If TRUE, will skip person data, using just household data.
 #'
 #' @return A survey object or a tibble.
 #' @export
@@ -17,7 +18,7 @@
 #' }
 #'
 #' @importFrom utils download.file unzip
-pnad_get <- function(year, design = TRUE, vars = NULL) {
+pnad_get <- function(year, design = TRUE, vars = NULL, hh_only = FALSE) {
 
   # A year must be provided
   stopifnot("You must select an year" = !missing(year))
@@ -53,60 +54,41 @@ pnad_get <- function(year, design = TRUE, vars = NULL) {
                    value = TRUE,
                    invert = TRUE))
 
-  # Import list of all variables
-  if (!is.null(vars)) {
-    input_pes_file <- file.path(temp_dir,
-                                grep(paste0("^input.{1}pes\\d{4}.txt"),
-                                     list.files(temp_dir),
-                                     ignore.case = TRUE,
-                                     value = TRUE))
-    input_dom_file <- file.path(temp_dir,
-                                grep(paste0("^input.{1}dom\\d{4}.txt"),
-                                     list.files(temp_dir),
-                                     ignore.case = TRUE,
-                                     value = TRUE))
+  hh_file_df <- file.path(temp_dir,
+                          grep(paste0("^dom\\d{4}"),
+                               list.files(temp_dir),
+                               ignore.case = TRUE,
+                               value = TRUE))
 
-    input_pes_vars <- dplyr::pull(sas_import(input_pes_file, year = year), "name")
-    input_dom_vars <- dplyr::pull(sas_import(input_dom_file, year = year), "name")
-    all_variables <- c(input_dom_vars, input_pes_vars)
+  hh_file_input <- file.path(temp_dir,
+                             grep(paste0("^input.{1}dom\\d{4}.txt"),
+                                  list.files(temp_dir),
+                                  ignore.case = TRUE,
+                                  value = TRUE))
 
-    rm(input_pes_file, input_dom_file, input_dom_vars, input_pes_vars)
-
-    # Check if all variables are ok and stop if not
-    if (!all(vars %in% all_variables)) {
-      missing_vars <- vars[!(vars %in% all_variables)]
-      stop(paste0("The package couldn't find the following vars:\n  ",
-                 paste(missing_vars, collapse = ", "), "."))
-    }
-  }
-
-  # Read data
-  dom <- NULL
-  pes <- NULL
-  for (data in c("pes", "dom")) {
-    file_df <- file.path(temp_dir,
-                         grep(paste0("^", data, "\\d{4}"),
-                              list.files(temp_dir),
-                              ignore.case = TRUE,
-                              value = TRUE))
-
-    file_input <- file.path(temp_dir,
-                            grep(paste0("^input.{1}", data, "\\d{4}.txt"),
+  # Check if person data will be skiped
+  if (hh_only == FALSE) {
+    prs_file_df <- file.path(temp_dir,
+                            grep(paste0("^pes\\d{4}"),
                                  list.files(temp_dir),
                                  ignore.case = TRUE,
                                  value = TRUE))
 
-    assign(data,
-           pnad_read(data = file_df, input = file_input, vars = vars))
+    prs_file_input <- file.path(temp_dir,
+                               grep(paste0("^input.{1}pes\\d{4}.txt"),
+                                    list.files(temp_dir),
+                                    ignore.case = TRUE,
+                                    value = TRUE))
+
+    pnad <- pnad_read(hh_data = hh_file_df, hh_input = hh_file_input,
+                      prs_data = prs_file_df, prs_input = prs_file_input,
+                      vars = vars)
+  } else {
+    pnad <- pnad_read(hh_data = hh_file_df, hh_file_input, vars = vars)
   }
-  rm(data, file_df, file_input)
 
   # Remove used files
   file.remove(list.files(temp_dir, full.names = TRUE))
-
-  # Merge households with persons
-  pnad <- dplyr::inner_join(dom, pes, by = c("V0101", "UF", "V0102", "V0103"))
-  rm(dom, pes)
 
   invisible(gc())
 
