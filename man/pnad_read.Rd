@@ -4,12 +4,16 @@
 \alias{pnad_read}
 \title{Import the data from PNAD using SAS input}
 \usage{
-pnad_read(data, input, vars)
+pnad_read(hh_data, hh_input, prs_data, prs_input, vars)
 }
 \arguments{
-\item{data}{Data file.}
+\item{hh_data}{Household data file.}
 
-\item{input}{Input SAS file.}
+\item{hh_input}{Household input SAS file.}
+
+\item{prs_data}{Person data file.}
+
+\item{prs_input}{Person input SAS file.}
 
 \item{vars}{Selected variables.}
 }
@@ -24,9 +28,11 @@ imported automatically, even if not selected.
 \examples{
 \dontrun{
 # Import household data
-pnad2008_dom <- pnad_read(data = "DOM2008.txt", input = "input DOM2008.txt")
+pnad2008_dom <- pnad_read(hh_data = "DOM2008.txt", hh_input = "input DOM2008.txt")
 
-# Import person data
-pnad2008_pes <- pnad_read(data = "PES2008.TXT", input = "input PES2008.txt", vars = c("V8005"))
+# Import household and person data, but just mandatory vars and V8005.
+pnad2008 <- pnad_read(hh_data = "DOM2008.txt", hh_input = "input DOM2008.txt",
+                      prs_data = "PES2008.TXT", prs_input = "input PES2008.txt",
+                      vars = c("V8005"))
 }
 }

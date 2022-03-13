@@ -1,6 +1,6 @@
 Package: dnads
 Title: Download, Read and Design PNADs
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: 
     person(given = "Hugo",
            family = "Macedo",

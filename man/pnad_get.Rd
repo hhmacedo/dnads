@@ -4,7 +4,7 @@
 \alias{pnad_get}
 \title{Download PNAD files and read them.}
 \usage{
-pnad_get(year, design = TRUE, vars = NULL)
+pnad_get(year, design = TRUE, vars = NULL, hh_only = FALSE)
 }
 \arguments{
 \item{year}{A year must be provided.}
@@ -12,6 +12,8 @@ pnad_get(year, design = TRUE, vars = NULL)
 \item{design}{TRUE if you want a survey object, FALSE if you want a dataframe.}
 
 \item{vars}{Selected variables}
+
+\item{hh_only}{If TRUE, will skip person data, using just household data.}
 }
 \value{
 A survey object or a tibble.
