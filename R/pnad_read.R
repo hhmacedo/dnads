@@ -28,9 +28,15 @@ pnad_read <- function(hh_data, hh_input, prs_data, prs_input, vars) {
 
   # Get year from data
   hh_year <- as.numeric(substr(readLines(hh_data, n = 1), 1, 4))
+  if (hh_year > 3000) {
+    hh_year <- 1900 + as.numeric(substr(readLines(hh_data, n = 1), 1, 2))
+  }
 
   if (!missing(prs_data)) {
     prs_year <- as.numeric(substr(readLines(hh_data, n = 1), 1, 4))
+    if (prs_year > 3000) {
+      prs_year <- 1900 + as.numeric(substr(readLines(prs_data, n = 1), 1, 2))
+    }
     stopifnot("Household data and person data are not from the same year." =
                 hh_year == prs_year)
   }
