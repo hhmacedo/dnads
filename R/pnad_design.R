@@ -7,6 +7,7 @@
 #'
 pnad_design <- function(df) {
   df_year <- unique(as.numeric(df$V0101))
+  if (df_year < 100) { df_year <- 1900 + df_year }
 
   design_vars <- data.frame(
     year = c(2001:2009, 2011:2015),
