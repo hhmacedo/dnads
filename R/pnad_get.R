@@ -48,20 +48,20 @@ pnad_get <- function(year, design = TRUE, vars = NULL, hh_only = FALSE) {
   }
 
   # Remove files that won't be necessary
-  file.remove(grep("(input )?(pes|dom)\\d{4}\\.txt",
+  file.remove(grep("((input )?(pes|dom)\\d{4}\\.txt|dicio.*\\.xls)",
                    list.files(path = temp_dir, full.names = TRUE),
                    ignore.case = TRUE,
                    value = TRUE,
                    invert = TRUE))
 
   hh_file_df <- file.path(temp_dir,
-                          grep(paste0("^dom\\d{4}"),
+                          grep("^dom\\d{4}",
                                list.files(temp_dir),
                                ignore.case = TRUE,
                                value = TRUE))
 
   hh_file_input <- file.path(temp_dir,
-                             grep(paste0("^input.{1}dom\\d{4}.txt"),
+                             grep("^input.dom\\d{4}.txt",
                                   list.files(temp_dir),
                                   ignore.case = TRUE,
                                   value = TRUE))
@@ -69,13 +69,13 @@ pnad_get <- function(year, design = TRUE, vars = NULL, hh_only = FALSE) {
   # Check if person data will be skiped
   if (hh_only == FALSE) {
     prs_file_df <- file.path(temp_dir,
-                            grep(paste0("^pes\\d{4}"),
+                            grep("^pes\\d{4}",
                                  list.files(temp_dir),
                                  ignore.case = TRUE,
                                  value = TRUE))
 
     prs_file_input <- file.path(temp_dir,
-                               grep(paste0("^input.{1}pes\\d{4}.txt"),
+                               grep("^input.pes\\d{4}.txt",
                                     list.files(temp_dir),
                                     ignore.case = TRUE,
                                     value = TRUE))
