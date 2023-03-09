@@ -26,6 +26,8 @@
 #' @importFrom rlang .data
 pnad_read <- function(hh_data, hh_input, prs_data, prs_input, vars) {
 
+  stopifnot("Household data and input are mandatory" = !(missing(hh_data) | missing(hh_input)))
+
   # Get year from data
   hh_year <- as.numeric(substr(readLines(hh_data, n = 1), 1, 4))
   if (hh_year > 3000) {
