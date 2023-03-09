@@ -33,18 +33,8 @@ pnad_get <- function(year, design = TRUE, vars = NULL, hh_only = FALSE) {
     utils::download.file(url = download_link, destfile = temp_file)
 
     # Extract files
-    if (.Platform$OS.type == "windows") {
+    zip::unzip(temp_file, junkpaths = TRUE, exdir = temp_dir)
 
-      utils::unzip(temp_file, junkpaths = TRUE, exdir = temp_dir)
-
-    } else {
-
-      system(paste("unzip -n -j",
-                   "-d", temp_dir,
-                   temp_file),
-             ignore.stdout = TRUE)
-
-    }
   }
 
   # Remove files that won't be necessary
