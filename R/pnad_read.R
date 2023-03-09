@@ -26,11 +26,19 @@
 #' @importFrom rlang .data
 pnad_read <- function(hh_data, hh_input, prs_data, prs_input, vars) {
 
+  stopifnot("Household data and input are mandatory" = !(missing(hh_data) | missing(hh_input)))
+
   # Get year from data
   hh_year <- as.numeric(substr(readLines(hh_data, n = 1), 1, 4))
+  if (hh_year > 3000) {
+    hh_year <- 1900 + as.numeric(substr(readLines(hh_data, n = 1), 1, 2))
+  }
 
   if (!missing(prs_data)) {
     prs_year <- as.numeric(substr(readLines(hh_data, n = 1), 1, 4))
+    if (prs_year > 3000) {
+      prs_year <- 1900 + as.numeric(substr(readLines(prs_data, n = 1), 1, 2))
+    }
     stopifnot("Household data and person data are not from the same year." =
                 hh_year == prs_year)
   }
@@ -59,13 +67,14 @@ pnad_read <- function(hh_data, hh_input, prs_data, prs_input, vars) {
 
         # Get mandatory vars
         mandatory_vars <-
-          dplyr::case_when(year == 2001 ~ list(c("PSU", "STRAT")),
+          dplyr::case_when(year %in% 1998:1999 ~ list(c("V4602", "UPA")),
+                           year == 2001 ~ list(c("PSU", "STRAT")),
                            year %in% 2004:2009 ~ list(c("V4618", "V4617", "V4619")),
                            # The option below excludes 2004:2009
                            year %in% 2002:2015 ~ list(c("V4618", "V4617")))
 
-        mandatory_vars <- c("V4610", "V4609", "V0101", "V0102", "V0103", "UF",
-                            unlist(mandatory_vars))
+        mandatory_vars <- c("V4107", "V4610", "V4609", "V0101", "V0102", "V0103",
+                            "UF", unlist(mandatory_vars))
 
         if (!is.null(prs_input_df)) {
           mandatory_vars <- c(mandatory_vars, "V0301")

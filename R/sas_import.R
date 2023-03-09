@@ -42,18 +42,25 @@ sas_import <- function(input, year) {
                      type = ifelse(substr(.data$X3, 1, 1) == "$", "c", "d"),
                      name = .data$X2)
 
-  # Change population projection character to numeric
-  if (year > 2007) {
+  # Fix the lower v in 1998 and 1999
+  if (year %in% 1998:1999) {
     input_df <- input_df %>%
-      dplyr::mutate(type = ifelse(.data$name == "V4609" & .data$type == "c",
-                                  "d",
-                                  .data$type))
+      dplyr::mutate(name = ifelse(.data$name == "v0102",
+                                  "V0102",
+                                  .data$name))
   }
 
   # Change age character to numeric
   if (year %in% c(2003, 2007)) {
     input_df <- input_df %>%
       dplyr::mutate(type = ifelse(.data$name == "V8005" & .data$type == "c",
+                                  "d",
+                                  .data$type))
+  }
+  # Change population projection character to numeric
+  if (year > 2007) {
+    input_df <- input_df %>%
+      dplyr::mutate(type = ifelse(.data$name == "V4609" & .data$type == "c",
                                   "d",
                                   .data$type))
   }
