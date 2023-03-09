@@ -38,20 +38,20 @@ pnad_get <- function(year, design = TRUE, vars = NULL, hh_only = FALSE) {
   }
 
   # Remove files that won't be necessary
-  file.remove(grep("((input )?(pes|dom)\\d{4}\\.txt|dicio.*\\.xls)",
+  file.remove(grep("((input |sas_)?(pes|dom)(soa|icilio)?\\d{2}(\\d{2})?\\.txt|dicio.*\\.xls)",
                    list.files(path = temp_dir, full.names = TRUE),
                    ignore.case = TRUE,
                    value = TRUE,
                    invert = TRUE))
 
   hh_file_df <- file.path(temp_dir,
-                          grep("^dom\\d{4}",
+                          grep("^dom(icilio)?\\d{2}(\\d{2})?",
                                list.files(temp_dir),
                                ignore.case = TRUE,
                                value = TRUE))
 
   hh_file_input <- file.path(temp_dir,
-                             grep("^input.dom\\d{4}.txt",
+                             grep("^(input|sas).dom\\d{2}(\\d{2})?.txt",
                                   list.files(temp_dir),
                                   ignore.case = TRUE,
                                   value = TRUE))
@@ -59,16 +59,16 @@ pnad_get <- function(year, design = TRUE, vars = NULL, hh_only = FALSE) {
   # Check if person data will be skiped
   if (hh_only == FALSE) {
     prs_file_df <- file.path(temp_dir,
-                            grep("^pes\\d{4}",
-                                 list.files(temp_dir),
-                                 ignore.case = TRUE,
-                                 value = TRUE))
+                             grep("^pes(soa)?\\d{2}(\\d{2})?",
+                                  list.files(temp_dir),
+                                  ignore.case = TRUE,
+                                  value = TRUE))
 
     prs_file_input <- file.path(temp_dir,
-                               grep("^input.pes\\d{4}.txt",
-                                    list.files(temp_dir),
-                                    ignore.case = TRUE,
-                                    value = TRUE))
+                                grep("^(input|sas).pes(soa)?\\d{2}(\\d{2})?.txt",
+                                     list.files(temp_dir),
+                                     ignore.case = TRUE,
+                                     value = TRUE))
 
     pnad <- pnad_read(hh_data = hh_file_df, hh_input = hh_file_input,
                       prs_data = prs_file_df, prs_input = prs_file_input,
