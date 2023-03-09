@@ -23,10 +23,6 @@ pnad_design <- function(df) {
 
   options( survey.lonely.psu = "adjust" )
 
-  pop_types <- data.frame(
-    x = unique(as.numeric(dplyr::pull(df, gsub("~", "", design_vars$post_strata)))),
-    y = unique(as.numeric(dplyr::pull(df, gsub("~", "", design_vars$post_strata))))
-  )
   # Create the PSU and STRAT for 1998 and 1999
   if (df_year %in% 1998:1999) {
     df <- df |>
@@ -42,8 +38,22 @@ pnad_design <- function(df) {
       )
   }
 
+  # Create a post stratification variable
+  df <- df %>%
+    dplyr::mutate(pos_estrato = ifelse(V4107 == "1",
+                                       paste0(UF, "_", "RM"),
+                                       paste0(UF, "_", "NaoRM")))
 
-  names(pop_types) <- c("Freq", gsub("~", "", design_vars$post_strata))
+  # Verify the post stratification population
+  pop_types <- df %>%
+    dplyr::group_by(pos_estrato) %>%
+    dplyr::summarise(minimo = min(V4609),
+                     Freq = mean(V4609),
+                     maximo = max(V4609))
+
+  pop_types <- pop_types %>%
+    dplyr::mutate(Freq = ifelse(minimo != maximo, minimo+maximo, Freq)) %>%
+    dplyr::select(pos_estrato, Freq)
 
   pnad_pre <- survey::svydesign(id = stats::as.formula(design_vars$pre_id),
                                 strata = stats::as.formula(design_vars$pre_strata),
