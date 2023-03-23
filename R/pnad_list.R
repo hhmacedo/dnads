@@ -62,9 +62,9 @@ pnad_list <- function(year = NULL, files = FALSE) {
     stopifnot("year must be a number" = !is.na(suppressWarnings(as.numeric(year))))
 
     # In this case, check if the required result is a list of PNAD files
-
     stopifnot("this year is not available" = year %in% ibge_pnads$year)
 
+    # Check if the year is in the "reponderacao" path
     if (grepl("reponderacao", ibge_pnads[ibge_pnads$year == year,]$folder)) {
       ibge_year <- paste0(ibge_ftp,
                           ibge_pnads[ibge_pnads$year == year,]$folder)
