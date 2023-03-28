@@ -43,7 +43,7 @@ pnad_list <- function(year = NULL, files = FALSE) {
   ibge_pnads <- dplyr::arrange(ibge_pnads, year)
 
   # Make some PNADs unavailable
-  ibge_pnads[ibge_pnads$year %in% c(1976:1979, 1981:1990, 1992:1993, 1995:1997), ]$folder <- NA
+  ibge_pnads[ibge_pnads$year %in% c(1976:1979, 1981:1990), ]$folder <- NA
 
   # Check if a list of PNADs is the required result
   if (files == FALSE) {
@@ -94,6 +94,18 @@ pnad_list <- function(year = NULL, files = FALSE) {
                       "\\S+$"),
                     value = TRUE,
                     ignore.case = TRUE))
+
+      # If the year is between 92 and 99, the PSU and Strat are apart
+      if (year %in% 1992:1999) {
+
+        ibge_requiredfiles <- c(
+          ibge_requiredfiles,
+          paste0("https://gitlab.com/hhmacedo/dnads/-/raw/main/amostra",
+                 as.numeric(year)-1900,
+                 ".zip")
+        )
+
+      }
 
       rm(ibge_ftp, ibge_year)
 

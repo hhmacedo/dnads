@@ -8,6 +8,7 @@
 #' @param hh_input Household input SAS file.
 #' @param prs_data Person data file.
 #' @param prs_input Person input SAS file.
+#' @param psu_strat File containing PSU and Strat.
 #' @param vars Selected variables.
 #'
 #' @return A tibble
@@ -24,7 +25,7 @@
 #'                       vars = c("V8005"))
 #' }
 #' @importFrom rlang .data
-pnad_read <- function(hh_data, hh_input, prs_data, prs_input, vars) {
+pnad_read <- function(hh_data, hh_input, prs_data, prs_input, psu_strat, vars) {
 
   stopifnot("Household data and input are mandatory" = !(missing(hh_data) | missing(hh_input)))
 
@@ -34,6 +35,7 @@ pnad_read <- function(hh_data, hh_input, prs_data, prs_input, vars) {
     hh_year <- 1900 + as.numeric(substr(readLines(hh_data, n = 1), 1, 2))
   }
 
+  # Check if both data are from the same year
   if (!missing(prs_data)) {
     prs_year <- as.numeric(substr(readLines(hh_data, n = 1), 1, 4))
     if (prs_year > 3000) {
@@ -45,6 +47,15 @@ pnad_read <- function(hh_data, hh_input, prs_data, prs_input, vars) {
 
   year <- hh_year
 
+  # Check if the PSU and Strat file will be used
+  if (year %in% c(1992:1999)) {
+    if (missing(psu_strat)) {
+      warning("To explore the PNAD correctly, it is extremely advisable to specify the PSU_STRAT file.")
+    } else {
+      stopifnot("The psu_strat file was not found." = file.exists(psu_strat))
+    }
+  }
+
   # Import household input
   hh_input_df <- sas_import(input = hh_input, year = year)
 
@@ -54,26 +65,36 @@ pnad_read <- function(hh_data, hh_input, prs_data, prs_input, vars) {
     prs_input_df <- NULL
   }
 
+  if (!missing(psu_strat)) {
+    psu_strat_name <- colnames(readr::read_csv(psu_strat,
+                                               col_types = "cccccc_",
+                                               n_max = 0))
+  } else {
+    psu_strat_name <- NULL
+  }
+
   # Check when vars are listed
   if (!missing("vars")) {
     if (!is.null(vars)) {
 
       # Check if all variables are ok and stop if not
-      if (!all(vars %in% c(hh_input_df$name, prs_input_df$name))) {
-        missing_vars <- vars[!(vars %in% c(hh_input_df$name, prs_input_df$name))]
+      if (!all(vars %in% c(hh_input_df$name, prs_input_df$name, psu_strat_name))) {
+        missing_vars <- vars[!(vars %in% c(hh_input_df$name, prs_input_df$name,
+                                           psu_strat_name))]
         stop(paste0("The package couldn't find the following vars:\n  ",
                     paste(missing_vars, collapse = ", "), "."))
       } else {
 
         # Get mandatory vars
         mandatory_vars <-
-          dplyr::case_when(year %in% 1998:1999 ~ list(c("V4602", "UPA")),
-                           year == 2001 ~ list(c("PSU", "STRAT")),
-                           year %in% 2004:2009 ~ list(c("V4618", "V4617", "V4619")),
+          dplyr::case_when(year %in% 1992:1993 ~ list(c("CONTROL")),
+                           year %in% 1995:1999 ~ list(c("V0102")),
+                           year == 2001 ~ list(c("V0102", "PSU", "STRAT")),
+                           year %in% 2004:2009 ~ list(c("V0102", "V4618", "V4617", "V4619")),
                            # The option below excludes 2004:2009
-                           year %in% 2002:2015 ~ list(c("V4618", "V4617")))
+                           year %in% 2002:2015 ~ list(c("V0102", "V4618", "V4617")))
 
-        mandatory_vars <- c("V4107", "V4610", "V4609", "V0101", "V0102", "V0103",
+        mandatory_vars <- c("V4107", "V4610", "V4609", "V0101", "V0103",
                             "UF", unlist(mandatory_vars))
 
         if (!is.null(prs_input_df)) {
@@ -134,11 +155,38 @@ pnad_read <- function(hh_data, hh_input, prs_data, prs_input, vars) {
     attr(prs_df, "spec") <- NULL
     attr(prs_df, "problems") <- NULL
     rm(prs_input_df)
-    df <- dplyr::inner_join(hh_df, prs_df,
-                            by = c("V0101", "UF", "V0102", "V0103"))
+
+    # Merge household data and person data
+    if (year %in% 1992:1993) {
+      df <- dplyr::inner_join(hh_df, prs_df,
+                              by = c("V0101", "UF", "CONTROL", "V0103"),
+                              multiple = "all")
+    } else {
+      df <- dplyr::inner_join(hh_df, prs_df,
+                              by = c("V0101", "UF", "V0102", "V0103"),
+                              multiple = "all")
+    }
+
   } else {
+    # Define household data as the data because person data was ignored
     df <- hh_df
     rm(hh_df)
+  }
+
+  # If psu_strat file is available, merge
+  if (!missing(psu_strat)) {
+    psu_strat_data <- readr::read_csv(psu_strat, col_types = "cccccc_")
+
+    if (year %in% 1992:1993) {
+      df <- dplyr::inner_join(df, psu_strat_data,
+                              by = c("V0101", "UF", "CONTROL", "V0103"),
+                              multiple = "all")
+    } else {
+      df <- dplyr::inner_join(df, psu_strat_data,
+                              by = c("V0101", "UF", "V0102", "V0103"),
+                              multiple = "all")
+    }
+    rm(psu_strat_data)
   }
 
   return(df)

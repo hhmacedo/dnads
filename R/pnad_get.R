@@ -26,55 +26,128 @@ pnad_get <- function(year, design = TRUE, vars = NULL, hh_only = FALSE) {
   # List required files
   download_links <- pnad_list(files = TRUE, year = year)
 
-  for (download_link in download_links) {
-    temp_file <- file.path(tempdir(), basename(download_link))
-    temp_dir <- file.path(tempdir(), "unzip")
+  # Create a temporary directory to keep files
+  temp_dir <- file.path(tempdir(), "pnad")
+  if(!dir.exists(temp_dir)) { dir.create(temp_dir) }
 
-    utils::download.file(url = download_link, destfile = temp_file)
+  if (length(download_links) %in% 1:2) {
 
-    # Extract files
-    zip::unzip(temp_file, junkpaths = TRUE, exdir = temp_dir)
+    for (download_link in download_links) {
+      # Download file
+      temp_file <- file.path(tempdir(), basename(download_link))
+      temp_zip <- file.path(tempdir(), "unzip")
+
+      utils::download.file(url = download_link, destfile = temp_file)
+
+      # Extract files and remove .zip
+      zip::unzip(temp_file, junkpaths = TRUE, exdir = temp_zip)
+      file.remove(temp_file)
+
+    }
+
+    temp_regex <- "^(input.)?(pes|dom)\\d{4}\\.txt$"
+
+    keep_files <- grep(temp_regex,
+                       list.files(path = temp_zip),
+                       ignore.case = TRUE,
+                       value = TRUE)
+
+    file.rename(from = file.path(temp_zip, keep_files),
+                to = file.path(temp_dir, keep_files))
+
+    unlink(temp_zip, recursive = TRUE)
+
+  } else {
+
+    for (download_link in download_links) {
+
+      # Identify the regex
+      temp_regex <- dplyr::case_when(
+        grepl("Dados\\.zip$", download_link) ~
+          paste0("(d(o(m(icilio(s)?)?)?)?|p(e(s(soa(s)?)?)?)?)", # person and hh variations
+                 "(\\d{2})?(\\d{2})?(br)?", # 0, 2 or 4 digits with or without a br
+                 "(\\.txt|\\.dat)?$"), # .txt, .dat or without an extension
+        grepl("Layout\\.zip$", download_link) ~ "(sas|input ).?(do(m)?|pe(s)?)(\\d{2})?\\.txt",
+        grepl("amostra\\d{2}\\.zip$", download_link) ~ "amostra\\d{2}\\.csv"
+      )
+
+      # Download file
+      temp_file <- file.path(tempdir(), basename(download_link))
+      temp_zip <- file.path(tempdir(), "unzip")
+
+      utils::download.file(url = download_link, destfile = temp_file)
+
+      # Extract files and remove .zip
+      zip::unzip(temp_file, junkpaths = TRUE, exdir = temp_zip)
+      file.remove(temp_file)
+
+      keep_files <- grep(temp_regex,
+                         list.files(path = temp_zip),
+                         ignore.case = TRUE,
+                         value = TRUE)
+
+      # Move files to the PNAD temporary directory
+      file.rename(from = file.path(temp_zip, keep_files),
+                  to = file.path(temp_dir, keep_files))
+
+      unlink(temp_zip, recursive = TRUE)
+    }
 
   }
-
-  # Remove files that won't be necessary
-  file.remove(grep("((input |sas_)?(pes|dom)(soa|icilio)?\\d{2}(\\d{2})?\\.txt|dicio.*\\.xls)",
-                   list.files(path = temp_dir, full.names = TRUE),
-                   ignore.case = TRUE,
-                   value = TRUE,
-                   invert = TRUE))
+  keep_files <- list.files(temp_dir)
 
   hh_file_df <- file.path(temp_dir,
-                          grep("^dom(icilio)?\\d{2}(\\d{2})?",
+                          grep("^d(om(icilio(s)?)?)?\\d{2}(\\d{2})?(br)?(\\.txt|\\.dat)?$",
                                list.files(temp_dir),
                                ignore.case = TRUE,
                                value = TRUE))
 
   hh_file_input <- file.path(temp_dir,
-                             grep("^(input|sas).dom\\d{2}(\\d{2})?.txt",
+                             grep("^(input.|sas.?)do(m)?(\\d{2})?(\\d{2})?\\.txt$",
                                   list.files(temp_dir),
                                   ignore.case = TRUE,
                                   value = TRUE))
 
-  # Check if person data will be skiped
+  if (year %in% 1992:1999) {
+    psu_strat_df <- file.path(temp_dir,
+                              grep("^amostra\\d{2}\\.csv$",
+                                   list.files(temp_dir),
+                                   ignore.case = TRUE,
+                                   value = TRUE))
+  }
+
+  # Check if person data will be skipped
   if (hh_only == FALSE) {
     prs_file_df <- file.path(temp_dir,
-                             grep("^pes(soa)?\\d{2}(\\d{2})?",
+                             grep("^p(es(soa(s)?)?)?\\d{2}(\\d{2})?(br)?(\\.txt|\\.dat)?$",
                                   list.files(temp_dir),
                                   ignore.case = TRUE,
                                   value = TRUE))
 
     prs_file_input <- file.path(temp_dir,
-                                grep("^(input|sas).pes(soa)?\\d{2}(\\d{2})?.txt",
+                                grep("^(input.|sas.?)pe(s)?(\\d{2})?(\\d{2})?\\.txt$",
                                      list.files(temp_dir),
                                      ignore.case = TRUE,
                                      value = TRUE))
 
-    pnad <- pnad_read(hh_data = hh_file_df, hh_input = hh_file_input,
-                      prs_data = prs_file_df, prs_input = prs_file_input,
-                      vars = vars)
+    if (year %in% 1992:1999) {
+      pnad <- pnad_read(hh_data = hh_file_df, hh_input = hh_file_input,
+                        prs_data = prs_file_df, prs_input = prs_file_input,
+                        psu_strat = psu_strat_df, vars = vars)
+    } else {
+      pnad <- pnad_read(hh_data = hh_file_df, hh_input = hh_file_input,
+                        prs_data = prs_file_df, prs_input = prs_file_input,
+                        vars = vars)
+    }
   } else {
-    pnad <- pnad_read(hh_data = hh_file_df, hh_file_input, vars = vars)
+
+    if (year %in% 1992:1999) {
+      pnad <- pnad_read(hh_data = hh_file_df, hh_file_input,
+                        psu_strat = psu_strat_df, vars = vars)
+    } else {
+      pnad <- pnad_read(hh_data = hh_file_df, hh_file_input, vars = vars)
+    }
+
   }
 
   # Remove used files
