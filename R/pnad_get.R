@@ -37,7 +37,10 @@ pnad_get <- function(year, design = TRUE, vars = NULL, hh_only = FALSE) {
       temp_file <- file.path(tempdir(), basename(download_link))
       temp_zip <- file.path(tempdir(), "unzip")
 
-      utils::download.file(url = download_link, destfile = temp_file)
+      download_link |>
+        httr2::request() |>
+        httr2::req_progress() |>
+        httr2::req_perform(path = temp_file)
 
       # Extract files and remove .zip
       zip::unzip(temp_file, junkpaths = TRUE, exdir = temp_zip)
@@ -75,7 +78,10 @@ pnad_get <- function(year, design = TRUE, vars = NULL, hh_only = FALSE) {
       temp_file <- file.path(tempdir(), basename(download_link))
       temp_zip <- file.path(tempdir(), "unzip")
 
-      utils::download.file(url = download_link, destfile = temp_file)
+      download_link |>
+        httr2::request() |>
+        httr2::req_progress() |>
+        httr2::req_perform(path = temp_file)
 
       # Extract files and remove .zip
       zip::unzip(temp_file, junkpaths = TRUE, exdir = temp_zip)

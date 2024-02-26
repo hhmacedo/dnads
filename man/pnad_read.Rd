@@ -4,7 +4,7 @@
 \alias{pnad_read}
 \title{Import the data from PNAD using SAS input}
 \usage{
-pnad_read(hh_data, hh_input, prs_data, prs_input, vars)
+pnad_read(hh_data, hh_input, prs_data, prs_input, psu_strat, vars)
 }
 \arguments{
 \item{hh_data}{Household data file.}
@@ -14,6 +14,8 @@ pnad_read(hh_data, hh_input, prs_data, prs_input, vars)
 \item{prs_data}{Person data file.}
 
 \item{prs_input}{Person input SAS file.}
+
+\item{psu_strat}{File containing PSU and Strat.}
 
 \item{vars}{Selected variables.}
 }
